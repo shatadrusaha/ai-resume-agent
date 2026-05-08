@@ -49,23 +49,28 @@ Phone: +1-555-123-4567
 
 ---
 
-### Phase 2: Ollama Integration Layer
-**Status:** NOT STARTED
+### Phase 2: ✅ Ollama Integration Layer
+**Status:** COMPLETE
 
-**Tasks:**
-1. Create `src/llm_client.py`:
-   - Ollama client wrapper (localhost:11434)
-   - `call_ollama(prompt, model_name)` function
-   - Error handling for connection failures
-   - Retry logic for transient failures
+**Deliverables:**
+- `src/llm_client.py` — Ollama client wrapper with connection management
+  - `test_connection()` — Verify Ollama is running
+  - `call_ollama(prompt, model)` — Send prompts to LLM
+  - `call_ollama_with_retry()` — Automatic retry with exponential backoff
+  - Error handling: `OllamaConnectionError`, `OllamaTimeoutError`
+  
+- `src/prompts.py` — Prompt templates for resume tailoring
+  - `tailor_summary_prompt()` — Rewrite summary for job
+  - `tailor_experience_prompt()` — Reorder and tailor experiences
+  - `tailor_skills_prompt()` — Filter and rank skills
+  - `evaluate_relevance_prompt()` — Assess resume-job fit
 
-2. Create `src/prompts.py`:
-   - Prompt templates for: summary, experience, skills tailoring
-   - Injection of job description context
-   - Structured prompts for consistent LLM output
-
-3. Test Ollama connectivity
-4. Recommend model: **Mistral 7B** (fast) or **Llama2 13B** (higher quality)
+**Features:**
+- Connection testing and model discovery
+- Configurable temperature, max_tokens, timeout
+- Retry logic with exponential backoff
+- Comprehensive error handling
+- Structured prompts for consistent LLM output
 
 **Verification:**
 ```bash
@@ -180,7 +185,7 @@ ai-resume-agent/
 ## Implementation Checklist
 
 - [x] Phase 1: Models, storage, config
-- [ ] Phase 2: Ollama client, prompt templates
+- [x] Phase 2: Ollama client, prompt templates
 - [ ] Phase 3: Resume agent orchestration
 - [ ] Phase 4: CLI interface
 - [ ] Phase 5: Tests, docs, usage guide
