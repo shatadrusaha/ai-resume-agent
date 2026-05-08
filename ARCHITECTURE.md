@@ -103,24 +103,44 @@ uv run python3 -c "from src.llm_client import OllamaClient; client.test_connecti
 
 ---
 
-### Phase 4: CLI & Prototype Validation
-**Status:** NOT STARTED
+### Phase 4: ✅ CLI & Prototype Validation
+**Status:** COMPLETE
 
-**Tasks:**
-1. Create `src/cli.py`:
-   - Arguments: `--resume FILE`, `--job-description FILE`, `--output FILE`, `--model NAME`
-   - Output tailored resume to file or stdout
+**Deliverables:**
+- `src/cli.py` — CLI application using Typer with 3 commands:
+  - `tailor` — Main command to tailor resume to job
+    - Options: `--resume`, `--job-description`, `--output`, `--model`, `--evaluate`
+  - `test-ollama` — Test Ollama connection and list available models
+  - `test-sample` — Quick test with sample files
 
-2. Update `main.py`:
-   ```bash
-   uv run python main.py --resume examples/my_resume.txt \
-                         --job-description examples/job_description.txt \
-                         --output tailored_resume.txt
-   ```
+- `main.py` — Entry point updated to invoke CLI
 
-3. End-to-end testing
+**Usage:**
+```bash
+# Main tailoring command
+uv run python main.py tailor --resume my_resume.txt \
+                             --job-description job.txt \
+                             --output tailored_resume.txt
 
-**Verification:** CLI works with sample files
+# Test Ollama connection
+uv run python main.py test-ollama
+
+# Quick test with samples
+uv run python main.py test-sample
+
+# Show help
+uv run python main.py --help
+uv run python main.py tailor --help
+```
+
+**Features:**
+- Rich logging output with ✓ checkmarks and status indicators
+- Proper error handling and exit codes
+- Optional resume-job fit evaluation before tailoring
+- Configurable Ollama model override
+- Sample data testing
+
+**Verification:** ✅ All CLI commands working, help text displays correctly
 
 ---
 
@@ -147,26 +167,33 @@ uv run python3 -c "from src.llm_client import OllamaClient; client.test_connecti
 ai-resume-agent/
 ├── src/
 │   ├── __init__.py
-│   ├── models.py              # Pydantic models
-│   ├── storage.py             # Parsing utilities
-│   ├── config.py              # Configuration
-│   ├── llm_client.py          # Ollama integration (Phase 2)
-│   ├── prompts.py             # Prompt templates (Phase 2)
-│   ├── resume_agent.py        # Core logic (Phase 3)
-│   └── cli.py                 # CLI interface (Phase 4)
+│   ├── models.py                           # Pydantic models
+│   ├── storage.py                          # Parsing utilities
+│   ├── config.py                           # Configuration
+│   ├── llm_client.py                       # Ollama integration (Phase 2)
+│   ├── prompts.py                          # Prompt templates (Phase 2)
+│   ├── resume_agent.py                     # Core logic (Phase 3)
+│   └── cli.py                              # CLI interface (Phase 4)
 ├── examples/
-│   ├── my_resume.txt
-│   └── job_description.txt
-├── tests/                     # Unit tests (Phase 5)
-├── main.py                    # Entry point
+│   ├── my_resume.txt.example               # ✅ Template (in git)
+│   ├── my_resume.txt                       # ❌ User's personal data (git-ignored)
+│   ├── job_description.txt.example         # ✅ Template (in git)
+│   ├── job_description.txt                 # ❌ User's personal data (git-ignored)
+│   └── tailored_*.txt                      # ❌ Generated (git-ignored)
+├── tests/                                  # Unit tests (Phase 5)
+├── main.py                                 # Entry point
 ├── pyproject.toml
-├── .env.example               # Configuration template
-├── .env                       # Local config (git-ignored)
+├── .env.example                            # Configuration template (in git)
+├── .env                                    # Local config (git-ignored)
 ├── .gitignore
-├── ARCHITECTURE.md            # This file
-├── PROTOTYPE_USAGE.md         # Usage guide (Phase 5)
+├── ARCHITECTURE.md                         # This file
+├── PROTOTYPE_USAGE.md                      # Usage guide (Phase 5)
 └── README.md
 ```
+
+**Git Strategy:**
+- ✅ **In repository:** Source code, example templates (`.example`), config template (`.env.example`)
+- ❌ **Git-ignored:** User's personal data, generated tailored resumes, user's `.env`, venv, cache
 
 ---
 
@@ -188,8 +215,8 @@ ai-resume-agent/
 
 - [x] Phase 1: Models, storage, config
 - [x] Phase 2: Ollama client, prompt templates
-- [ ] Phase 3: Resume agent orchestration
-- [ ] Phase 4: CLI interface
+- [x] Phase 3: Resume agent orchestration
+- [x] Phase 4: CLI interface
 - [ ] Phase 5: Tests, docs, usage guide
 
 ---

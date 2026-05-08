@@ -1,0 +1,25 @@
+## PERSONAL
+Name: Alex Johnson
+Email: alex.johnson@email.com
+Phone: +1-555-123-4567
+
+## SUMMARY
+Experienced full-stack software engineer with 6+ years of experience building scalable web applications and distributed systems. Proficient in Python, JavaScript, and Go with a strong background in system design and cloud architecture. Passionate about writing clean, maintainable code and mentoring junior developers.
+
+## EXPERIENCE
+* Senior Software Engineer at TechCorp (Mar 2021 - Present)
+  Led the redesign of the core payment processing system, reducing latency by 40% and improving reliability to 99.99% uptime. Mentored 3 junior engineers and conducted code reviews across the team. Tech stack: Python, FastAPI, PostgreSQL, Redis, Kubernetes.
+
+* Software Engineer at DataSystems Inc (Jan 2019 - Feb 2021)
+  Developed real-time analytics pipeline processing 10M+ events per day. Designed and implemented microservices using Go and Node.js. Collaborated with data science team to optimize query performance. Tech stack: Go, Node.js, Elasticsearch, Kafka, AWS.
+
+* Junior Developer at StartupXYZ (Jun 2018 - Dec 2018)
+  Built REST APIs and frontend components for a SaaS platform. Implemented automated testing suite that increased code coverage to 85%. Tech stack: Python, React, Django, PostgreSQL.
+
+## SKILLS
+- Python, JavaScript, Go, SQL, Java
+- FastAPI, Django, Express.js, React, Vue.js
+- PostgreSQL, MongoDB, Redis, Elasticsearch
+- Docker, Kubernetes, AWS, GCP
+- System Design, Microservices, CI/CD
+- Leadership, Mentoring, Technical Communication

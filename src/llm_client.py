@@ -149,10 +149,24 @@ class OllamaClient:
                 json=payload,
                 timeout=self.timeout,
             )
+
+            # Handle 404: Model not found
+            if response.status_code == 404:
+                msg = (
+                    f"Model '{model}' not found on Ollama server. "
+                    f"Pull it with: ollama pull {model}"
+                )
+                logger.error(msg)
+                raise OllamaConnectionError(msg)
+
             response.raise_for_status()
 
             data = response.json()
             generated_text = data.get("response", "").strip()
+
+            # Debug: Log the raw response if empty
+            if not generated_text:
+                logger.warning(f"Empty response from Ollama. Raw data: {data}")
 
             logger.debug(f"Generated {len(generated_text)} characters")
             return generated_text
@@ -162,7 +176,11 @@ class OllamaClient:
             logger.error(msg)
             raise OllamaTimeoutError(msg) from e
         except requests.exceptions.ConnectionError as e:
-            msg = f"Failed to connect to Ollama at {self.base_url}"
+            msg = f"Failed to connect to Ollama at {self.base_url}. Is Ollama running? (ollama serve)"
+            logger.error(msg)
+            raise OllamaConnectionError(msg) from e
+        except requests.exceptions.HTTPError as e:
+            msg = f"Ollama HTTP error: {str(e)}"
             logger.error(msg)
             raise OllamaConnectionError(msg) from e
         except json.JSONDecodeError as e:

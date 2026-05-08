@@ -1,6 +1,7 @@
-def main():
-    print("Hello from ai-resume-agent!")
+"""Entry point for the AI Resume Agent."""
 
+from src.cli import app
 
 if __name__ == "__main__":
-    main()
+    app()
+

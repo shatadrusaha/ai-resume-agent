@@ -23,8 +23,16 @@ An AI-powered agent that tailors your resume to job descriptions using **local L
 # 1. Install dependencies
 uv sync
 
-# 2. Tailor your resume
-uv run python main.py \
+# 2. Copy example files to create your personal files
+cp examples/my_resume.txt.example examples/my_resume.txt
+cp examples/job_description.txt.example examples/job_description.txt
+
+# 3. Edit your files
+# - examples/my_resume.txt — your master resume
+# - examples/job_description.txt — the job you're applying for
+
+# 4. Tailor your resume
+uv run python main.py tailor \
   --resume examples/my_resume.txt \
   --job-description examples/job_description.txt \
   --output tailored_resume.txt

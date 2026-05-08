@@ -11,3 +11,12 @@ wheels/
 
 # Environment variables
 .env
+
+# Generated resumes (user-specific output)
+tailored_resume.txt
+tailored_*.txt
+
+# User's personal resume/job data (copy from .example versions)
+examples/my_resume.txt
+examples/job_description.txt
+
