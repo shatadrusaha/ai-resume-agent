@@ -120,25 +120,13 @@ For detailed implementation phases, design decisions, and future extensions, see
 - ✅ Phase 2: Ollama integration
 - ✅ Phase 3: Core agent logic
 - ✅ Phase 4: CLI interface
-- ⏳ Phase 5: Tests & documentation
+- ✅ Phase 5: Tests & documentation
 
 ## Development
 
-### Verify parsing is working
-```bash
-uv run python3 << 'EOF'
-from src.storage import load_resume_from_file, load_job_description_from_file
-resume = load_resume_from_file('examples/my_resume.txt')
-job = load_job_description_from_file('examples/job_description.txt')
-print(f"Resume: {resume.name} ({len(resume.experience)} experiences)")
-print(f"Job: {job.title} at {job.company}")
-EOF
-```
+For full contributor setup instructions, code style conventions, and how to add dependencies, see [docs/DEV_SETUP.md](docs/DEV_SETUP.md).
 
-### Test Ollama connection
-```bash
-uv run python main.py tailor --help
-```
+For common errors and fixes, see [docs/TROUBLESHOOTING.md](docs/TROUBLESHOOTING.md).
 
 ## Requirements
 
@@ -152,7 +140,7 @@ uv run python main.py tailor --help
 - ✅ Phase 2: LLM integration
 - ✅ Phase 3: Resume tailoring logic
 - ✅ Phase 4: CLI interface
-- 🔜 Phase 5: Testing & documentation
+- ✅ Phase 5: Testing & documentation
 - 🚀 Future: Streamlit UI, PDF support, database backend
 
 ## License
@@ -161,4 +149,4 @@ MIT — See [LICENSE](LICENSE)
 
 ## Contributing
 
-PRs welcome! See [ARCHITECTURE.md](ARCHITECTURE.md) for design details.
+PRs welcome! See [docs/DEV_SETUP.md](docs/DEV_SETUP.md) for contributor setup and [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) for design details.

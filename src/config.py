@@ -17,13 +17,13 @@ class OllamaConfig(BaseModel):
     Attributes:
         host: Ollama server hostname (default: localhost)
         port: Ollama server port (default: 11434)
-        model: Default LLM model to use (default: mistral)
+        model: Default LLM model to use (default: llama3)
         timeout: Request timeout in seconds (default: 300)
     """
 
     host: str = Field(default="localhost", description="Ollama server host")
     port: int = Field(default=11434, description="Ollama server port")
-    model: str = Field(default="mistral", description="LLM model name")
+    model: str = Field(default="llama3", description="LLM model name")
     timeout: int = Field(default=300, description="Request timeout in seconds")
 
     @property
@@ -73,7 +73,7 @@ class AppSettings(BaseSettings):
 
     ollama_host: str = Field(default="localhost", description="Ollama server host")
     ollama_port: int = Field(default=11434, description="Ollama server port")
-    ollama_model: str = Field(default="mistral", description="LLM model name")
+    ollama_model: str = Field(default="llama3", description="LLM model name")
     ollama_timeout: int = Field(default=300, description="Request timeout in seconds")
 
     tailoring_temperature: float = Field(

@@ -79,7 +79,7 @@ Phone: +1-555-123-4567
 
 **Verification:**
 ```bash
-uv run python3 -c "from src.llm_client import OllamaClient; client.test_connection()"
+uv run python -c "from src.llm_client import OllamaClient; client = OllamaClient(); client.test_connection()"
 ```
 
 ---
@@ -149,20 +149,25 @@ uv run python main.py tailor --help
 
 ---
 
-### Phase 5: Testing & Documentation
-**Status:** NOT STARTED
+### Phase 5: ✅ Testing & Documentation
+**Status:** COMPLETE
 
-**Tasks:**
-1. Create `tests/` directory:
-   - `test_storage.py` — Resume/job description parsing
-   - `test_llm_client.py` — Ollama client with mocks
-   - `test_resume_agent.py` — Agent logic
+**Deliverables:**
+- `tests/conftest.py` — Shared pytest fixtures (resume, job description, temp files)
+- `tests/test_storage.py` — 23 tests for resume/job description parsing
+- `tests/test_llm_client.py` — 20 tests for Ollama client with mocked HTTP calls
+- `tests/test_resume_agent.py` — 20 tests for agent orchestration with mocked LLM
+- `docs/TESTING.md` — Test structure and how to write new tests
+- `docs/DOCSTRING_GUIDE.md` — Google-style docstring standards
+- `docs/DEV_SETUP.md` — Contributor onboarding guide
+- `docs/TROUBLESHOOTING.md` — Common errors and fixes
+- `docs/EXECUTION_FLOW.md` — Step-by-step execution walkthrough
+- `docs/WORKFLOW.drawio` — Visual workflow diagram
+- Google-style docstrings added to all source modules
 
-2. Create `PROTOTYPE_USAGE.md` — Quick start guide
-3. Add docstrings throughout
-4. Document plain-text format examples
+**Results:** 63 tests passing, 73% overall coverage
 
-**Verification:** `uv run pytest tests/`
+**Verification:** `uv run pytest`
 
 ---
 
@@ -170,35 +175,44 @@ uv run python main.py tailor --help
 
 ```
 ai-resume-agent/
+├── main.py                              # CLI entry point
+├── pyproject.toml                       # Dependencies + pytest config
+├── .env.example                         # Configuration template (in git)
+├── .env                                 # Local config (git-ignored)
+├── .gitignore
+├── uv.lock                              # Locked dependency versions
 ├── src/
 │   ├── __init__.py
-│   ├── models.py                           # Pydantic models
-│   ├── storage.py                          # Parsing utilities
-│   ├── config.py                           # Configuration
-│   ├── llm_client.py                       # Ollama integration (Phase 2)
-│   ├── prompts.py                          # Prompt templates (Phase 2)
-│   ├── resume_agent.py                     # Core logic (Phase 3)
-│   └── cli.py                              # CLI interface (Phase 4)
+│   ├── models.py                        # Pydantic models (Resume, Experience, Skill, JobDescription)
+│   ├── storage.py                       # Parsing utilities
+│   ├── config.py                        # Configuration via pydantic-settings
+│   ├── llm_client.py                    # Ollama integration
+│   ├── prompts.py                       # Prompt templates
+│   ├── resume_agent.py                  # Core orchestration
+│   └── cli.py                           # Typer CLI interface
+├── tests/
+│   ├── conftest.py                      # Shared pytest fixtures
+│   ├── test_storage.py                  # 23 tests for storage module
+│   ├── test_llm_client.py               # 20 tests for Ollama client
+│   └── test_resume_agent.py             # 20 tests for agent logic
 ├── examples/
-│   ├── my_resume.txt.example               # ✅ Template (in git)
-│   ├── my_resume.txt                       # ❌ User's personal data (git-ignored)
-│   ├── job_description.txt.example         # ✅ Template (in git)
-│   ├── job_description.txt                 # ❌ User's personal data (git-ignored)
-│   └── tailored_*.txt                      # ❌ Generated (git-ignored)
-├── tests/                                  # Unit tests (Phase 5)
-├── main.py                                 # Entry point
-├── pyproject.toml
-├── .env.example                            # Configuration template (in git)
-├── .env                                    # Local config (git-ignored)
-├── .gitignore
-├── docs/ARCHITECTURE.md                    # This file
-├── PROTOTYPE_USAGE.md                      # Usage guide (Phase 5)
-└── README.md
+│   ├── my_resume.txt.example            # ✅ Template (in git)
+│   ├── my_resume.txt                    # ❌ User's personal data (git-ignored)
+│   ├── job_description.txt.example      # ✅ Template (in git)
+│   └── job_description.txt              # ❌ User's personal data (git-ignored)
+└── docs/
+    ├── ARCHITECTURE.md                  # This file
+    ├── EXECUTION_FLOW.md                # Step-by-step code execution walkthrough
+    ├── WORKFLOW.drawio                  # Visual workflow diagram
+    ├── TESTING.md                       # Test structure and how to write tests
+    ├── DOCSTRING_GUIDE.md               # Google-style docstring standards
+    ├── DEV_SETUP.md                     # Contributor onboarding guide
+    └── TROUBLESHOOTING.md               # Common errors and fixes
 ```
 
 **Git Strategy:**
 - ✅ **In repository:** Source code, example templates (`.example`), config template (`.env.example`)
-- ❌ **Git-ignored:** User's personal data, generated tailored resumes, user's `.env`, venv, cache
+- ❌ **Git-ignored:** User's personal data, generated tailored resumes, `.env`, `.venv`, cache, coverage reports
 
 ---
 
