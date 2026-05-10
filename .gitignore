@@ -12,6 +12,11 @@ wheels/
 # Environment variables
 .env
 
+# Test coverage reports
+.coverage
+htmlcov/
+.pytest_cache/
+
 # Generated resumes (user-specific output)
 tailored_resume.txt
 tailored_*.txt
