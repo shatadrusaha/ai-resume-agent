@@ -1,7 +1,5 @@
 """Configuration settings for the resume agent."""
 
-import os
-
 from pydantic import BaseModel, Field
 from pydantic_settings import BaseSettings, SettingsConfigDict
 

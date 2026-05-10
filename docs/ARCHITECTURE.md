@@ -191,7 +191,7 @@ ai-resume-agent/
 ├── .env.example                            # Configuration template (in git)
 ├── .env                                    # Local config (git-ignored)
 ├── .gitignore
-├── ARCHITECTURE.md                         # This file
+├── docs/ARCHITECTURE.md                    # This file
 ├── PROTOTYPE_USAGE.md                      # Usage guide (Phase 5)
 └── README.md
 ```

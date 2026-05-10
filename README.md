@@ -23,15 +23,18 @@ An AI-powered agent that tailors your resume to job descriptions using **local L
 # 1. Install dependencies
 uv sync
 
-# 2. Copy example files to create your personal files
+# 2. Configure Ollama settings
+cp .env.example .env
+
+# 3. Copy example files and fill in your own details
 cp examples/my_resume.txt.example examples/my_resume.txt
 cp examples/job_description.txt.example examples/job_description.txt
 
-# 3. Edit your files
+# 4. Edit your files
 # - examples/my_resume.txt — your master resume
 # - examples/job_description.txt — the job you're applying for
 
-# 4. Tailor your resume
+# 5. Tailor your resume
 uv run python main.py tailor \
   --resume examples/my_resume.txt \
   --job-description examples/job_description.txt \
@@ -66,7 +69,7 @@ Phone: +1-234-567-8900
 - System Design, Leadership
 ```
 
-See [examples/my_resume.txt](examples/my_resume.txt) for a full example.
+See [examples/my_resume.txt.example](examples/my_resume.txt.example) for a full example.
 
 ## Configuration
 
@@ -91,33 +94,37 @@ Settings default to sensible values if `.env` is missing.
 
 ```
 src/
-├── models.py           # Pydantic data models
-├── storage.py          # Resume/job description parsing
-├── config.py           # Configuration management
-├── llm_client.py       # Ollama integration
-├── prompts.py          # Prompt templates
-├── resume_agent.py     # Core tailoring logic
-└── cli.py              # Command-line interface
+├── models.py               # Pydantic data models
+├── storage.py              # Resume/job description parsing
+├── config.py               # Configuration management (Pydantic BaseSettings)
+├── llm_client.py           # Ollama integration
+├── prompts.py              # Prompt templates
+├── resume_agent.py         # Core tailoring logic
+└── cli.py                  # Command-line interface
 
 examples/
-├── my_resume.txt
-└── job_description.txt
+├── my_resume.txt.example       # Template — copy to my_resume.txt
+└── job_description.txt.example # Template — copy to job_description.txt
+
+docs/
+├── WORKFLOW.drawio         # Visual workflow diagram (open in draw.io)
+└── EXECUTION_FLOW.md       # Step-by-step execution walkthrough
 ```
 
 ## Architecture & Implementation Plan
 
-For detailed implementation phases, design decisions, and future extensions, see [ARCHITECTURE.md](ARCHITECTURE.md).
+For detailed implementation phases, design decisions, and future extensions, see [ARCHITECTURE.md](docs/ARCHITECTURE.md).
 
 **Current Status:**
 - ✅ Phase 1: Data models & storage
-- ⏳ Phase 2: Ollama integration
-- ⏳ Phase 3: Core agent logic
-- ⏳ Phase 4: CLI interface
+- ✅ Phase 2: Ollama integration
+- ✅ Phase 3: Core agent logic
+- ✅ Phase 4: CLI interface
 - ⏳ Phase 5: Tests & documentation
 
 ## Development
 
-### Test parsing (Phase 1)
+### Verify parsing is working
 ```bash
 uv run python3 << 'EOF'
 from src.storage import load_resume_from_file, load_job_description_from_file
@@ -128,23 +135,23 @@ print(f"Job: {job.title} at {job.company}")
 EOF
 ```
 
-### Run tests
+### Test Ollama connection
 ```bash
-uv run pytest tests/
+uv run python main.py tailor --help
 ```
 
 ## Requirements
 
 - **Ollama must be running** locally on `localhost:11434`
-- Recommended model: **Mistral 7B** (fast) or **Llama2 13B** (higher quality)
-- Download: `ollama pull mistral` or `ollama pull llama2`
+- Recommended models: **llama3** (tested & working), **mistral** (fast), **llama2** (higher quality)
+- Download a model: `ollama pull llama3`
 
 ## Roadmap
 
 - ✅ Phase 1: Core data structures
-- 📍 Phase 2: LLM integration
-- 🔜 Phase 3: Resume tailoring logic
-- 🔜 Phase 4: CLI interface
+- ✅ Phase 2: LLM integration
+- ✅ Phase 3: Resume tailoring logic
+- ✅ Phase 4: CLI interface
 - 🔜 Phase 5: Testing & documentation
 - 🚀 Future: Streamlit UI, PDF support, database backend
 
