@@ -11,6 +11,11 @@ Build AI-powered resume tailor agent using Python + Ollama (local LLM). The agen
 - Plain-text resume storage
 - Modular package structure (ready for future UI)
 
+**📊 Visual Documentation:**
+- See [docs/WORKFLOW.drawio](docs/WORKFLOW.drawio) for the complete workflow diagram (editable in draw.io)
+  - Shows config loading → Ollama connection → file parsing → parallel tailoring → output generation
+  - Updated whenever significant changes are made to the codebase
+
 ---
 
 ## Project Phases
