@@ -1,4 +1,8 @@
-"""Command-line interface for the resume agent."""
+"""Command-line interface for the AI Resume Agent.
+
+Provides Typer-based CLI commands for tailoring resumes to job descriptions
+and testing Ollama connection.
+"""
 
 import logging
 from pathlib import Path
@@ -53,13 +57,20 @@ def tailor(
         help="Show resume-job fit evaluation",
     ),
 ) -> None:
-    """
-    Tailor your resume to a job description.
+    """Tailor a resume to match a specific job description.
+
+    Loads your master resume and a job description, then uses the LLM
+    to tailor your summary, experiences, and skills to match the role.
+
+    Args:
+        resume: Path to your resume text file
+        job_description: Path to job description text file
+        output: Output path for tailored resume (default: tailored_resume.txt)
+        model: Override default LLM model (e.g., 'llama3', 'mistral')
+        evaluate: Show resume-job fit analysis before tailoring
 
     Example:
-        uv run python main.py --resume my_resume.txt \\
-                              --job-description job.txt \\
-                              --output tailored_resume.txt
+        uv run python main.py tailor \\\n            --resume examples/my_resume.txt \\\n            --job-description examples/job_description.txt \\\n            --output my_tailored_resume.txt
     """
     try:
         # Initialize agent

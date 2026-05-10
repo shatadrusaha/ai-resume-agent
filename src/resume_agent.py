@@ -1,4 +1,8 @@
-"""Core resume tailoring agent."""
+"""Core resume tailoring agent orchestration.
+
+The ResumeAgent class coordinates file I/O, LLM calls, and parsing
+to transform a master resume into a job-specific tailored version.
+"""
 
 import logging
 from typing import Optional
@@ -12,42 +16,57 @@ logger = logging.getLogger(__name__)
 
 
 class ResumeAgent:
-    """Main agent for tailoring resumes to job descriptions."""
+    """Main orchestrator for tailoring resumes to specific job descriptions.
+
+    Coordinates loading resumes and job descriptions, calling the LLM to tailor
+    each section (summary, experiences, skills), and assembling the final result.
+
+    Attributes:
+        ollama_client: OllamaClient for LLM communication
+    """
 
     def __init__(self, ollama_client: Optional[OllamaClient] = None):
-        """
-        Initialize the resume agent.
+        """Initialize the resume tailoring agent.
 
         Args:
-            ollama_client: OllamaClient instance. If None, creates default client.
+            ollama_client: OllamaClient instance. If None, creates a default client
+                using configuration from .env
         """
         self.ollama_client = ollama_client or OllamaClient()
         logger.info("ResumeAgent initialized")
 
     def load_resume(self, file_path: str) -> Resume:
-        """
-        Load resume from file.
+        """Load a resume from a text file.
 
         Args:
-            file_path: Path to resume text file
+            file_path: Path to resume text file (e.g., 'examples/my_resume.txt')
 
         Returns:
-            Resume object
+            Resume object with all sections populated
+
+        Raises:
+            FileNotFoundError: If file doesn't exist
+            ValueError: If resume format is invalid
         """
         logger.info(f"Loading resume from {file_path}")
         resume = load_resume_from_file(file_path)
-        logger.info(f"Loaded resume for {resume.name} with {len(resume.experience)} experiences")
+        logger.info(
+            f"Loaded resume for {resume.name} with {len(resume.experience)} experiences"
+        )
         return resume
 
     def load_job_description(self, file_path: str) -> JobDescription:
-        """
-        Load job description from file.
+        """Load a job description from a text file.
 
         Args:
-            file_path: Path to job description text file
+            file_path: Path to job description file (e.g., 'examples/job_description.txt')
 
         Returns:
-            JobDescription object
+            JobDescription object with all fields populated
+
+        Raises:
+            FileNotFoundError: If file doesn't exist
+            ValueError: If job description format is invalid
         """
         logger.info(f"Loading job description from {file_path}")
         job = load_job_description_from_file(file_path)
@@ -55,15 +74,20 @@ class ResumeAgent:
         return job
 
     def tailor_summary(self, resume: Resume, job_description: JobDescription) -> str:
-        """
-        Generate a tailored summary for the job.
+        """Generate a tailored summary for the target job.
+
+        Uses the LLM to rewrite the professional summary to emphasize
+        job-relevant accomplishments and keywords.
 
         Args:
-            resume: User's resume
+            resume: User's resume with original summary
             job_description: Target job description
 
         Returns:
             Tailored summary text
+
+        Raises:
+            OllamaConnectionError: If LLM communication fails
         """
         logger.info("Tailoring summary...")
         prompt = PromptTemplates.tailor_summary_prompt(resume, job_description)
@@ -82,15 +106,20 @@ class ResumeAgent:
     def tailor_experience(
         self, resume: Resume, job_description: JobDescription
     ) -> list[Experience]:
-        """
-        Generate tailored and reordered experience entries.
+        """Tailor and reorder experiences to match the target job.
+
+        Uses the LLM to reorder work history by relevance and rewrite
+        achievements to highlight job-required skills.
 
         Args:
-            resume: User's resume
+            resume: User's resume with original experiences
             job_description: Target job description
 
         Returns:
-            List of tailored Experience objects
+            List of tailored Experience objects, most relevant first
+
+        Raises:
+            OllamaConnectionError: If LLM communication fails
         """
         logger.info("Tailoring experience...")
         prompt = PromptTemplates.tailor_experience_prompt(resume, job_description)
@@ -114,15 +143,20 @@ class ResumeAgent:
     def tailor_skills(
         self, resume: Resume, job_description: JobDescription
     ) -> list[Skill]:
-        """
-        Generate tailored and ranked skills.
+        """Tailor and rank skills by job relevance.
+
+        Uses the LLM to filter skills and reorder by importance to the
+        target role. Keeps top 15-20 most relevant skills.
 
         Args:
-            resume: User's resume
+            resume: User's resume with original skills
             job_description: Target job description
 
         Returns:
             List of tailored Skill objects, ranked by relevance
+
+        Raises:
+            OllamaConnectionError: If LLM communication fails
         """
         logger.info("Tailoring skills...")
         prompt = PromptTemplates.tailor_skills_prompt(resume, job_description)
@@ -144,15 +178,17 @@ class ResumeAgent:
             raise
 
     def evaluate_fit(self, resume: Resume, job_description: JobDescription) -> dict:
-        """
-        Evaluate how well the resume fits the job.
+        """Evaluate how well the resume matches the target job.
+
+        Uses the LLM to analyze resume-job fit and identify strengths
+        and skill gaps.
 
         Args:
             resume: User's resume
             job_description: Target job description
 
         Returns:
-            Dictionary with match percentage and gap analysis
+            Dictionary with 'match_percentage', 'matches', and 'gaps' keys
         """
         logger.info("Evaluating resume-job fit...")
         prompt = PromptTemplates.evaluate_relevance_prompt(resume, job_description)
@@ -176,11 +212,13 @@ class ResumeAgent:
     def generate_tailored_resume(
         self, resume: Resume, job_description: JobDescription
     ) -> Resume:
-        """
-        Generate a fully tailored resume for the job.
+        """Generate a complete resume tailored to the target job.
+
+        Coordinates tailoring of all resume sections (summary, experiences,
+        skills) and returns a new Resume object with job-specific content.
 
         Args:
-            resume: User's resume
+            resume: User's master resume
             job_description: Target job description
 
         Returns:
@@ -207,16 +245,20 @@ class ResumeAgent:
         return tailored_resume
 
     @staticmethod
-    def _parse_experience_from_text(text: str, original_resume: Resume) -> list[Experience]:
-        """
-        Parse LLM response back into Experience objects.
+    def _parse_experience_from_text(
+        text: str, original_resume: Resume
+    ) -> list[Experience]:
+        """Parse LLM-generated experience text back into Experience objects.
+
+        Extracts position information and descriptions from LLM output,
+        with fallback to original experiences if parsing fails.
 
         Args:
             text: LLM-generated experience text
-            original_resume: Original resume for reference
+            original_resume: Original resume for fallback reference
 
         Returns:
-            List of Experience objects
+            List of parsed Experience objects
         """
         experiences = []
         lines = text.strip().split("\n")
@@ -273,22 +315,28 @@ class ResumeAgent:
 
         # If parsing failed, return top experiences from original resume
         if not experiences:
-            logger.warning("Could not parse experiences from LLM output, using original top 3")
+            logger.warning(
+                "Could not parse experiences from LLM output, using original top 3"
+            )
             return original_resume.experience[:3]
 
         return experiences
 
     @staticmethod
-    def _create_experience_from_text(position_line: str, description: str) -> Optional[Experience]:
-        """
-        Create an Experience object from parsed text.
+    def _create_experience_from_text(
+        position_line: str, description: str
+    ) -> Optional[Experience]:
+        """Create an Experience object from parsed text lines.
+
+        Extracts job title, company, dates, and description from
+        LLM-formatted position and description lines.
 
         Args:
-            position_line: Line with position info
-            description: Description text
+            position_line: Line containing position info (e.g., 'Position 1: ...')
+            description: Description text with achievements
 
         Returns:
-            Experience object or None if parsing fails
+            Experience object if parsing succeeds, None otherwise
         """
         import re
 
@@ -317,14 +365,16 @@ class ResumeAgent:
 
     @staticmethod
     def _parse_skills_from_text(text: str) -> list[Skill]:
-        """
-        Parse comma-separated skills from LLM response.
+        """Parse comma-separated skills from LLM response.
+
+        Splits LLM output by commas and creates Skill objects for
+        each non-empty skill name.
 
         Args:
-            text: LLM-generated skills text
+            text: LLM-generated skills text (comma-separated)
 
         Returns:
-            List of Skill objects
+            List of Skill objects in order from most to least relevant
         """
         skills = []
 
@@ -339,14 +389,16 @@ class ResumeAgent:
 
     @staticmethod
     def _parse_evaluation(text: str) -> dict:
-        """
-        Parse evaluation response from LLM.
+        """Parse LLM evaluation response for resume-job fit.
+
+        Extracts match percentage, strengths, and skill gaps from
+        LLM analysis output.
 
         Args:
-            text: LLM-generated evaluation
+            text: LLM-generated evaluation text
 
         Returns:
-            Dictionary with match percentage and gaps
+            Dictionary with keys: 'match_percentage', 'matches', 'gaps'
         """
         import re
 
@@ -365,7 +417,9 @@ class ResumeAgent:
         matches_line = re.search(r"Matches:\s*(.+?)(?:Gaps:|$)", text, re.DOTALL)
         if matches_line:
             matches_text = matches_line.group(1).strip()
-            result["matches"] = [m.strip() for m in matches_text.split(",") if m.strip()]
+            result["matches"] = [
+                m.strip() for m in matches_text.split(",") if m.strip()
+            ]
 
         # Extract gaps
         gaps_line = re.search(r"Gaps:\s*(.+?)$", text, re.DOTALL)

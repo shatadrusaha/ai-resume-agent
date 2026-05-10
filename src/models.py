@@ -6,7 +6,12 @@ from pydantic import BaseModel, Field, EmailStr
 
 
 class Skill(BaseModel):
-    """Represents a single skill."""
+    """Represents a single professional skill.
+
+    Attributes:
+        name: The skill name (e.g., Python, Leadership, Communication)
+        category: Optional category for organizing skills (e.g., Programming, Soft Skills)
+    """
 
     name: str = Field(..., min_length=1, description="Skill name")
     category: str = Field(
@@ -15,11 +20,21 @@ class Skill(BaseModel):
     )
 
     def __str__(self) -> str:
+        """Return the skill name as a string."""
         return self.name
 
 
 class Experience(BaseModel):
-    """Represents a work experience entry."""
+    """Represents a work experience entry in a resume.
+
+    Attributes:
+        job_title: Position title (e.g., Senior Software Engineer)
+        company: Company name where the role was held
+        start_date: Employment start date (e.g., "Jan 2020")
+        end_date: Employment end date (e.g., "Dec 2021" or "Present")
+        description: Role description and main responsibilities
+        achievements: Optional list of key achievements or metrics
+    """
 
     job_title: str = Field(..., min_length=1, description="Job title")
     company: str = Field(..., min_length=1, description="Company name")
@@ -31,13 +46,26 @@ class Experience(BaseModel):
     )
 
     def __str__(self) -> str:
+        """Return formatted experience as a string."""
         return (
             f"{self.job_title} at {self.company} ({self.start_date} - {self.end_date})"
         )
 
 
 class Resume(BaseModel):
-    """Represents a complete resume."""
+    """Represents a complete professional resume.
+
+    Contains personal information, professional summary, work experience,
+    and skills. Used as the master resume and also for tailored versions.
+
+    Attributes:
+        name: Full name of the person
+        email: Valid email address
+        phone: Optional phone number
+        summary: Professional summary or objective (2-3 sentences)
+        experience: List of work experience entries (chronological order)
+        skills: List of professional skills
+    """
 
     name: str = Field(..., min_length=1, description="Full name")
     email: EmailStr = Field(..., description="Email address")
@@ -49,14 +77,23 @@ class Resume(BaseModel):
     skills: List[Skill] = Field(default_factory=list, description="Skills list")
 
     def add_experience(self, experience: Experience) -> None:
-        """Add an experience entry to the resume."""
+        """Add an experience entry to the resume.
+
+        Args:
+            experience: Experience object to add
+        """
         self.experience.append(experience)
 
     def add_skill(self, skill: Skill) -> None:
-        """Add a skill to the resume."""
+        """Add a skill to the resume.
+
+        Args:
+            skill: Skill object to add
+        """
         self.skills.append(skill)
 
     def __str__(self) -> str:
+        """Return formatted resume as a string."""
         lines = [
             f"Name: {self.name}",
             f"Email: {self.email}",
@@ -77,7 +114,18 @@ class Resume(BaseModel):
 
 
 class JobDescription(BaseModel):
-    """Represents a job description."""
+    """Represents a job posting description.
+
+    Used to extract requirements and responsibilities that guide the
+    resume tailoring process. Helps the AI understand the target role.
+
+    Attributes:
+        title: Job title (e.g., Senior Backend Engineer)
+        company: Company name
+        description: Full job description text
+        required_skills: List of required or desired skills
+        responsibilities: List of key job responsibilities
+    """
 
     title: str = Field(..., min_length=1, description="Job title")
     company: str = Field(default="", description="Company name")

@@ -1,4 +1,9 @@
-"""Storage and parsing utilities for resume files."""
+"""Storage and parsing utilities for resume and job description files.
+
+This module provides functions to load resume and job description text files
+and convert them into Pydantic models for type-safe manipulation. Includes
+parsers for plain-text formats defined in the examples/ directory.
+"""
 
 import re
 from pathlib import Path
@@ -8,25 +13,21 @@ from src.models import Resume, Experience, Skill, JobDescription
 
 
 def parse_resume_from_text(text: str) -> Resume:
-    """
-    Parse a resume from plain-text format.
+    """Parse a resume from plain-text format.
 
-    Expected format:
-    ## PERSONAL
-    Name: John Doe
-    Email: john@example.com
-    Phone: +1-234-567-8900
+    Expects text with clear section headers (## PERSONAL, ## EXPERIENCE, etc.)
+    and extracts all information into a structured Resume object. See
+    examples/my_resume.txt.example for the complete format.
 
-    ## SUMMARY
-    [Summary text]
+    Args:
+        text: Resume text in the standard format with ## section headers
 
-    ## EXPERIENCE
-    * Job Title at Company (Start - End)
-      Description of role and achievements
+    Returns:
+        Resume object with all sections parsed and validated
 
-    ## SKILLS
-    - Python, JavaScript, Go
-    - FastAPI, React
+    Raises:
+        ValueError: If email format is invalid
+        ValidationError: If parsed data doesn't match Resume schema
     """
     sections = _split_sections(text)
 
@@ -71,7 +72,14 @@ def parse_resume_from_text(text: str) -> Resume:
 
 
 def _split_sections(text: str) -> dict:
-    """Split resume text into sections by ## headers."""
+    """Split text into sections by ## headers.
+
+    Args:
+        text: Text to split
+
+    Returns:
+        Dictionary mapping section names (uppercase) to their content
+    """
     sections = {}
     current_section = None
     current_content = []
@@ -96,7 +104,18 @@ def _split_sections(text: str) -> dict:
 
 
 def _parse_experience_section(text: str) -> List[Experience]:
-    """Parse experience section into Experience objects."""
+    """Parse experience section into Experience objects.
+
+    Expects lines formatted as:
+        * Job Title at Company (Start - End)
+          Description and achievements here
+
+    Args:
+        text: Experience section text
+
+    Returns:
+        List of Experience objects, one per bullet point
+    """
     experiences = []
     entries = text.split("*")[1:]  # Split by * bullet points
 
@@ -131,7 +150,18 @@ def _parse_experience_section(text: str) -> List[Experience]:
 
 
 def _parse_skills_section(text: str) -> List[Skill]:
-    """Parse skills section into Skill objects."""
+    """Parse skills section into Skill objects.
+
+    Handles both line-by-line and comma-separated formats.
+    Lines starting with '-' are parsed, with multiple skills
+    separated by commas on a single line.
+
+    Args:
+        text: Skills section text
+
+    Returns:
+        List of Skill objects
+    """
     skills = []
     lines = text.strip().split("\n")
 
@@ -150,7 +180,18 @@ def _parse_skills_section(text: str) -> List[Skill]:
 
 
 def load_resume_from_file(file_path: str) -> Resume:
-    """Load a resume from a text file."""
+    """Load a resume from a text file.
+
+    Args:
+        file_path: Path to resume text file
+
+    Returns:
+        Resume object with all fields populated
+
+    Raises:
+        FileNotFoundError: If file doesn't exist
+        ValueError: If resume format is invalid
+    """
     path = Path(file_path)
     if not path.exists():
         raise FileNotFoundError(f"Resume file not found: {file_path}")
@@ -162,7 +203,15 @@ def load_resume_from_file(file_path: str) -> Resume:
 
 
 def save_resume_to_file(resume: Resume, file_path: str) -> None:
-    """Save a resume to a text file in the standard format."""
+    """Save a resume to a text file in the standard format.
+
+    Creates parent directories if they don't exist. Writes resume
+    in the plain-text format with ## section headers.
+
+    Args:
+        resume: Resume object to save
+        file_path: Path where the file should be saved
+    """
     path = Path(file_path)
     path.parent.mkdir(parents=True, exist_ok=True)
 
@@ -204,27 +253,19 @@ def save_resume_to_file(resume: Resume, file_path: str) -> None:
 
 
 def parse_job_description_from_text(text: str) -> JobDescription:
-    """
-    Parse a job description from plain-text format.
+    """Parse a job description from plain-text format.
 
-    Expected format:
-    ## JOB TITLE
-    Senior Software Engineer
+    Expects text with section headers (## JOB TITLE, ## COMPANY, etc.).
+    See examples/job_description.txt.example for the complete format.
 
-    ## COMPANY
-    TechCorp
+    Args:
+        text: Job description text with ## section headers
 
-    ## DESCRIPTION
-    [Full job description]
+    Returns:
+        JobDescription object with all sections extracted
 
-    ## REQUIRED SKILLS
-    - Python
-    - Go
-    - Kubernetes
-
-    ## RESPONSIBILITIES
-    - Lead team projects
-    - Code reviews
+    Raises:
+        ValueError: If required sections are missing
     """
     sections = _split_sections(text)
 
@@ -244,7 +285,14 @@ def parse_job_description_from_text(text: str) -> JobDescription:
 
 
 def _parse_list_section(text: str) -> List[str]:
-    """Parse a simple list section (lines starting with -)."""
+    """Parse a simple list section (lines starting with -).
+
+    Args:
+        text: Text containing list items prefixed with '-'
+
+    Returns:
+        List of items with '-' prefixes and whitespace removed
+    """
     items = []
     for line in text.split("\n"):
         line = line.strip()
@@ -256,7 +304,18 @@ def _parse_list_section(text: str) -> List[str]:
 
 
 def load_job_description_from_file(file_path: str) -> JobDescription:
-    """Load a job description from a text file."""
+    """Load a job description from a text file.
+
+    Args:
+        file_path: Path to job description text file
+
+    Returns:
+        JobDescription object with all fields populated
+
+    Raises:
+        FileNotFoundError: If file doesn't exist
+        ValueError: If job description format is invalid
+    """
     path = Path(file_path)
     if not path.exists():
         raise FileNotFoundError(f"Job description file not found: {file_path}")

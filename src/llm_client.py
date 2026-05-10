@@ -1,4 +1,8 @@
-"""Ollama LLM client for resume tailoring."""
+"""Ollama LLM client for communicating with local language models.
+
+Provides a client class to interact with Ollama, including connection
+testing, model discovery, and prompt generation with retry logic.
+"""
 
 import json
 import logging
@@ -12,26 +16,40 @@ logger = logging.getLogger(__name__)
 
 
 class OllamaConnectionError(Exception):
-    """Raised when unable to connect to Ollama."""
+    """Raised when unable to connect to Ollama server.
+
+    Can indicate Ollama is not running, network issues, or server is unreachable.
+    """
 
     pass
 
 
 class OllamaTimeoutError(Exception):
-    """Raised when Ollama request times out."""
+    """Raised when Ollama request exceeds timeout threshold.
+
+    Indicates the LLM took too long to respond. Can be retried.
+    """
 
     pass
 
 
 class OllamaClient:
-    """Client for interacting with Ollama local LLM."""
+    """Client for interacting with Ollama local LLM.
+
+    Handles HTTP communication with Ollama server, including connection
+    verification, model discovery, and prompt generation.
+
+    Attributes:
+        base_url: Ollama server URL (e.g., http://localhost:11434)
+        model: Default LLM model name
+        timeout: Request timeout in seconds
+    """
 
     def __init__(self, config=None):
-        """
-        Initialize Ollama client.
+        """Initialize Ollama client.
 
         Args:
-            config: OllamaConfig instance. If None, uses global config.
+            config: OllamaConfig instance. If None, loads from global config.
         """
         if config is None:
             config = get_config().ollama
@@ -42,14 +60,17 @@ class OllamaClient:
         self.timeout = config.timeout
 
     def test_connection(self) -> bool:
-        """
-        Test connection to Ollama server.
+        """Test connection to Ollama server.
+
+        Pings the Ollama /api/tags endpoint to verify the server
+        is running and responding.
 
         Returns:
-            True if connection successful, False otherwise.
+            True if connection successful
 
         Raises:
-            OllamaConnectionError: If unable to connect to Ollama.
+            OllamaConnectionError: If unable to connect
+            OllamaTimeoutError: If connection times out
         """
         try:
             response = requests.get(
@@ -76,14 +97,13 @@ class OllamaClient:
             raise OllamaConnectionError(msg) from e
 
     def get_available_models(self) -> list[str]:
-        """
-        Get list of available models from Ollama.
+        """Get list of available models from Ollama server.
 
         Returns:
-            List of model names available on the server.
+            List of model names (e.g., ['llama3', 'mistral', 'neural-chat'])
 
         Raises:
-            OllamaConnectionError: If unable to connect to Ollama.
+            OllamaConnectionError: If unable to reach Ollama
         """
         try:
             response = requests.get(
@@ -106,21 +126,23 @@ class OllamaClient:
         temperature: Optional[float] = None,
         max_tokens: Optional[int] = None,
     ) -> str:
-        """
-        Call Ollama with a prompt and get response.
+        """Call Ollama with a prompt and get response.
+
+        Sends a prompt to the LLM and waits for generated text response.
+        Uses configuration defaults if model/temperature/max_tokens not specified.
 
         Args:
-            prompt: The prompt to send to the model
-            model: Model name (uses default if not specified)
-            temperature: Creativity level 0.0-1.0 (uses config default if not specified)
-            max_tokens: Maximum tokens to generate (uses config default if not specified)
+            prompt: The prompt text to send to the model
+            model: Model name. Defaults to self.model if not specified
+            temperature: Creativity level 0.0-1.0. Defaults to config if not specified
+            max_tokens: Maximum tokens to generate. Defaults to config if not specified
 
         Returns:
             Generated text from the model
 
         Raises:
             OllamaConnectionError: If unable to connect to Ollama
-            OllamaTimeoutError: If request times out
+            OllamaTimeoutError: If request exceeds timeout
         """
         if model is None:
             model = self.model

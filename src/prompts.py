@@ -1,22 +1,32 @@
-"""Prompt templates for resume tailoring."""
+"""Prompt templates for tailoring resumes using LLMs.
+
+Defines prompts that guide the language model to rewrite resume sections
+(summary, experiences, skills) to match target job descriptions.
+"""
 
 from src.models import JobDescription, Resume
 
 
 class PromptTemplates:
-    """Collection of prompt templates for resume tailoring."""
+    """Collection of prompt templates for resume tailoring.
+
+    Each static method generates a specific prompt to instruct the LLM
+    on how to transform resume content to match a job description.
+    """
 
     @staticmethod
     def tailor_summary_prompt(resume: Resume, job_description: JobDescription) -> str:
-        """
-        Generate a prompt to tailor the resume summary.
+        """Generate a prompt to tailor the resume summary.
+
+        Creates a prompt that instructs the LLM to rewrite the professional
+        summary to match the target job. Emphasizes relevance and keyword incorporation.
 
         Args:
-            resume: The user's resume
-            job_description: The target job description
+            resume: User's resume with original summary
+            job_description: Target job with requirements and focus areas
 
         Returns:
-            A prompt string for the LLM
+            LLM prompt string ready to send to Ollama
         """
         return f"""You are an expert resume writer. Your task is to tailor a professional summary to match a job description.
 
@@ -44,15 +54,18 @@ Return ONLY the new summary text, without any preamble or explanation."""
     def tailor_experience_prompt(
         resume: Resume, job_description: JobDescription
     ) -> str:
-        """
-        Generate a prompt to tailor and reorder experience entries.
+        """Generate a prompt to tailor and reorder work experiences.
+
+        Creates a prompt that instructs the LLM to rewrite and reorder
+        experience entries to highlight job-relevant achievements.
+        Returns top 3-4 most relevant experiences.
 
         Args:
-            resume: The user's resume
-            job_description: The target job description
+            resume: User's resume with original experiences
+            job_description: Target job with responsibilities and required skills
 
         Returns:
-            A prompt string for the LLM
+            LLM prompt string ready to send to Ollama
         """
         experience_text = "\n\n".join(
             [
@@ -93,18 +106,18 @@ Description: [Rewritten description]
 Only include the top 3-4 most relevant positions. Do NOT include preamble or explanation."""
 
     @staticmethod
-    def tailor_skills_prompt(
-        resume: Resume, job_description: JobDescription
-    ) -> str:
-        """
-        Generate a prompt to tailor and rank skills.
+    def tailor_skills_prompt(resume: Resume, job_description: JobDescription) -> str:
+        """Generate a prompt to tailor and rank skills by job relevance.
+
+        Creates a prompt that instructs the LLM to filter, prioritize,
+        and rank skills to match the job description. Returns top 15-20 skills.
 
         Args:
-            resume: The user's resume
-            job_description: The target job description
+            resume: User's resume with original skills
+            job_description: Target job with required skills
 
         Returns:
-            A prompt string for the LLM
+            LLM prompt string ready to send to Ollama
         """
         current_skills = ", ".join([skill.name for skill in resume.skills])
 
@@ -136,15 +149,17 @@ Do NOT include preamble or explanation. Return ONLY the comma-separated skills l
     def evaluate_relevance_prompt(
         resume: Resume, job_description: JobDescription
     ) -> str:
-        """
-        Generate a prompt to evaluate resume-job fit.
+        """Generate a prompt to evaluate resume-job fit.
+
+        Creates a prompt that instructs the LLM to analyze how well
+        the resume matches the job and provide a match percentage.
 
         Args:
-            resume: The user's resume
-            job_description: The target job description
+            resume: User's resume
+            job_description: Target job
 
         Returns:
-            A prompt string for the LLM
+            LLM prompt string ready to send to Ollama
         """
         return f"""Analyze how well this resume matches the job description.
 
