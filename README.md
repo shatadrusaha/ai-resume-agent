@@ -82,7 +82,7 @@ cp .env.example .env
 **Available settings** (in `.env`):
 - `OLLAMA_HOST` — Ollama server host (default: `localhost`)
 - `OLLAMA_PORT` — Ollama server port (default: `11434`)
-- `OLLAMA_MODEL` — LLM model name (default: `mistral`; try `llama2`, `neural-chat`, etc.)
+- `OLLAMA_MODEL` — LLM model name (default: `llama3`; try `mistral`, `llama2`, `neural-chat`, etc.)
 - `OLLAMA_TIMEOUT` — Request timeout in seconds (default: `300`)
 - `TAILORING_TEMPERATURE` — LLM creativity level 0.0-1.0 (default: `0.7`)
 - `TAILORING_MAX_TOKENS` — Max generated text length (default: `2000`)
@@ -93,22 +93,44 @@ Settings default to sensible values if `.env` is missing.
 ## Project Structure
 
 ```
+.
+├── main.py                      # Entry point for CLI
+├── pyproject.toml               # uv project config, dependencies, pytest settings
+├── .env.example                 # Environment variables template
+├── README.md                    # Project documentation
+├── LICENSE                      # MIT license
+│
 src/
-├── models.py               # Pydantic data models
-├── storage.py              # Resume/job description parsing
-├── config.py               # Configuration management (Pydantic BaseSettings)
-├── llm_client.py           # Ollama integration
-├── prompts.py              # Prompt templates
-├── resume_agent.py         # Core tailoring logic
-└── cli.py                  # Command-line interface
+├── models.py                    # Pydantic data models (Skill, Experience, Resume, JobDescription)
+├── storage.py                   # Parse & save resume/job description files
+├── config.py                    # Configuration management (BaseSettings with lazy singleton)
+├── llm_client.py                # Ollama HTTP client & error handling
+├── prompts.py                   # LLM prompt templates
+├── resume_agent.py              # Core tailoring orchestration
+└── cli.py                       # Typer CLI (tailor, test-ollama, test-sample commands)
+
+tests/
+├── conftest.py                  # pytest fixtures (sample data, temp files)
+├── test_models.py               # [Not in use - models are simple data classes]
+├── test_storage.py              # 8 test classes, 23 tests, 99% coverage
+├── test_llm_client.py           # 6 test classes, 20 tests, 76% coverage
+└── test_resume_agent.py         # 9 test classes, 20 tests, 90% coverage
 
 examples/
-├── my_resume.txt.example       # Template — copy to my_resume.txt
-└── job_description.txt.example # Template — copy to job_description.txt
+├── my_resume.txt.example            # Template — copy to my_resume.txt and customize
+├── job_description.txt.example      # Template — copy to job_description.txt and customize
+├── tailored_sample_resume.txt       # Output from `test-sample` command (git ignored)
+└── my_resume.txt                    # [User creates — git ignored]
+    job_description.txt             # [User creates — git ignored]
 
 docs/
-├── WORKFLOW.drawio         # Visual workflow diagram (open in draw.io)
-└── EXECUTION_FLOW.md       # Step-by-step execution walkthrough
+├── ARCHITECTURE.md              # Project design, phases 1-5, future roadmap
+├── TESTING.md                   # Test guide, coverage report, how to write tests
+├── DEV_SETUP.md                 # Contributor setup: uv, Ollama, .env, dependencies
+├── TROUBLESHOOTING.md           # Common errors & solutions
+├── DOCSTRING_GUIDE.md           # Google-style docstring standard for this project
+├── EXECUTION_FLOW.md            # Step-by-step walkthrough of CLI tailor command
+└── WORKFLOW.drawio              # Visual workflow diagram (open in draw.io)
 ```
 
 ## Architecture & Implementation Plan
