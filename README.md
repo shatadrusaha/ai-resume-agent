@@ -43,6 +43,28 @@ uv run python main.py tailor \
 
 That's it! Your tailored resume is saved to `tailored_resume.txt`.
 
+## Web UI (Streamlit)
+
+Prefer a graphical interface? Use the Streamlit web app instead:
+
+```bash
+# 1. Make sure Ollama is running: ollama serve
+
+# 2. Start the Streamlit app
+./run_ui.sh
+# Or manually: uv run streamlit run src/streamlit_app.py
+
+# 3. Open http://localhost:8501 in your browser
+```
+
+**Features:**
+- 📤 Drag-and-drop file upload for resume & job description
+- ⚙️ Configure LLM settings (model, temperature, timeout)
+- 🔗 Real-time Ollama connection status
+- ✨ Live resume tailoring with progress indicator
+- 📊 View fit evaluation score
+- ⬇️ Download tailored resume directly
+
 ## Resume Format
 
 Store your master resume as plain text with clear sections:
@@ -95,6 +117,7 @@ Settings default to sensible values if `.env` is missing.
 ```
 .
 ├── main.py                      # Entry point for CLI
+├── run_ui.sh                    # Launcher script for Streamlit web UI
 ├── pyproject.toml               # uv project config, dependencies, pytest settings
 ├── .env.example                 # Environment variables template
 ├── README.md                    # Project documentation
@@ -107,11 +130,11 @@ src/
 ├── llm_client.py                # Ollama HTTP client & error handling
 ├── prompts.py                   # LLM prompt templates
 ├── resume_agent.py              # Core tailoring orchestration
-└── cli.py                       # Typer CLI (tailor, test-ollama, test-sample commands)
+├── cli.py                       # Typer CLI (tailor, test-ollama, test-sample commands)
+└── streamlit_app.py             # Streamlit web UI interface
 
 tests/
 ├── conftest.py                  # pytest fixtures (sample data, temp files)
-├── test_models.py               # [Not in use - models are simple data classes]
 ├── test_storage.py              # 8 test classes, 23 tests, 99% coverage
 ├── test_llm_client.py           # 6 test classes, 20 tests, 76% coverage
 └── test_resume_agent.py         # 9 test classes, 20 tests, 90% coverage
@@ -124,7 +147,8 @@ examples/
     job_description.txt             # [User creates — git ignored]
 
 docs/
-├── ARCHITECTURE.md              # Project design, phases 1-5, future roadmap
+├── ARCHITECTURE.md              # Project design, phases 1-6, future roadmap
+├── STREAMLIT.md                 # Streamlit UI user guide
 ├── TESTING.md                   # Test guide, coverage report, how to write tests
 ├── DEV_SETUP.md                 # Contributor setup: uv, Ollama, .env, dependencies
 ├── TROUBLESHOOTING.md           # Common errors & solutions
@@ -143,6 +167,7 @@ For detailed implementation phases, design decisions, and future extensions, see
 - ✅ Phase 3: Core agent logic
 - ✅ Phase 4: CLI interface
 - ✅ Phase 5: Tests & documentation
+- ✅ Phase 6: Streamlit web UI
 
 ## Development
 
@@ -163,7 +188,8 @@ For common errors and fixes, see [docs/TROUBLESHOOTING.md](docs/TROUBLESHOOTING.
 - ✅ Phase 3: Resume tailoring logic
 - ✅ Phase 4: CLI interface
 - ✅ Phase 5: Testing & documentation
-- 🚀 Future: Streamlit UI, PDF support, database backend
+- ✅ Phase 6: Streamlit web UI
+- 🔜 Phase 7: PDF support, database backend, multi-user support
 
 ## License
 

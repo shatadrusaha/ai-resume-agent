@@ -10,6 +10,7 @@ dependencies = [
     "requests>=2.31.0",
     "python-dotenv>=1.0.0",
     "typer>=0.9.0",
+    "streamlit>=1.28.0",
 ]
 
 [dependency-groups]

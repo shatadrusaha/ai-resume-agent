@@ -171,11 +171,48 @@ uv run python main.py tailor --help
 
 ---
 
+### Phase 6: ✅ Streamlit Web UI
+**Status:** COMPLETE
+
+**Deliverables:**
+- `src/streamlit_app.py` — Complete Streamlit web interface
+- `run_ui.sh` — Shell script to launch the UI
+- `docs/STREAMLIT.md` — Streamlit UI user guide
+- Streamlit added to `pyproject.toml` dependencies
+
+**Features:**
+- **File Upload**: Drag-and-drop resume and job description
+- **Ollama Status**: Real-time connection checker
+- **Configuration Panel**: Model selection, temperature, timeout settings
+- **Processing**: Live progress indicator during tailoring
+- **Results**: Preview tailored resume with evaluation score
+- **Download**: Direct download of tailored resume as `.txt` file
+- **Privacy**: All processing local, no external APIs
+
+**UI Workflow:**
+1. Check Ollama connection status (sidebar)
+2. Upload resume and job description files
+3. Configure LLM settings (optional)
+4. Click "✨ Tailor Resume" button
+5. View results and download tailored resume
+
+**Benefits over CLI:**
+- No command-line knowledge required
+- Visual feedback and progress indicators
+- Browser-based access (localhost:8501)
+- Real-time Ollama status monitoring
+- File upload interface (drag-and-drop)
+
+**Verification:** `./run_ui.sh` launches at `http://localhost:8501`
+
+---
+
 ## File Structure
 
 ```
 ai-resume-agent/
 ├── main.py                              # CLI entry point
+├── run_ui.sh                            # Streamlit UI launcher script
 ├── pyproject.toml                       # Dependencies + pytest config
 ├── .env.example                         # Configuration template (in git)
 ├── .env                                 # Local config (git-ignored)
@@ -189,7 +226,8 @@ ai-resume-agent/
 │   ├── llm_client.py                    # Ollama integration
 │   ├── prompts.py                       # Prompt templates
 │   ├── resume_agent.py                  # Core orchestration
-│   └── cli.py                           # Typer CLI interface
+│   ├── cli.py                           # Typer CLI interface
+│   └── streamlit_app.py                 # Streamlit web UI
 ├── tests/
 │   ├── conftest.py                      # Shared pytest fixtures
 │   ├── test_storage.py                  # 23 tests for storage module
@@ -202,6 +240,7 @@ ai-resume-agent/
 │   └── job_description.txt              # ❌ User's personal data (git-ignored)
 └── docs/
     ├── ARCHITECTURE.md                  # This file
+    ├── STREAMLIT.md                     # Streamlit UI user guide
     ├── EXECUTION_FLOW.md                # Step-by-step code execution walkthrough
     ├── WORKFLOW.drawio                  # Visual workflow diagram
     ├── TESTING.md                       # Test structure and how to write tests
@@ -236,18 +275,19 @@ ai-resume-agent/
 - [x] Phase 2: Ollama client, prompt templates
 - [x] Phase 3: Resume agent orchestration
 - [x] Phase 4: CLI interface
-- [ ] Phase 5: Tests, docs, usage guide
+- [x] Phase 5: Tests, docs, usage guide
+- [x] Phase 6: Streamlit web UI
 
 ---
 
-## Future Extensions (Out of Scope for MVP)
+## Future Extensions (Phase 7+)
 
-- ❌ UI layer (Streamlit/web app) — **Phase 6 future**
-- ❌ Database backend (SQLite/PostgreSQL) — **Future**
-- ❌ Multi-user support / auth — **Future**
-- ❌ Resume PDF parsing — **Future**
-- ❌ LinkedIn API integration — **Future**
-- ❌ Cloud deployment / Docker — **Future**
+- ❌ Database backend (SQLite/PostgreSQL) — Store tailoring history and user profiles
+- ❌ Multi-user support / auth — User accounts and resume management
+- ❌ Resume PDF parsing — Accept PDF input (currently text-only)
+- ❌ Grouped skills display — Organize skills by category (Languages, Infrastructure, etc.)
+- ❌ LinkedIn API integration — Import resume from LinkedIn
+- ❌ Cloud deployment / Docker — Deploy to cloud platforms
 
 ---
 

@@ -47,9 +47,15 @@ class Experience(BaseModel):
 
     def __str__(self) -> str:
         """Return formatted experience as a string."""
-        return (
+        lines = [
             f"{self.job_title} at {self.company} ({self.start_date} - {self.end_date})"
-        )
+        ]
+        if self.description:
+            lines.append(f"  {self.description}")
+        if self.achievements:
+            for achievement in self.achievements:
+                lines.append(f"  - {achievement}")
+        return "\n".join(lines)
 
 
 class Resume(BaseModel):

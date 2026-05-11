@@ -67,13 +67,11 @@ Return ONLY the new summary text, without any preamble or explanation."""
         Returns:
             LLM prompt string ready to send to Ollama
         """
-        experience_text = "\n\n".join(
-            [
-                f"Position {i + 1}: {exp.job_title} at {exp.company} ({exp.start_date} - {exp.end_date})\n"
-                f"Description: {exp.description}"
-                for i, exp in enumerate(resume.experience)
-            ]
-        )
+        experience_text = "\n\n".join([
+            f"Position {i + 1}: {exp.job_title} at {exp.company} ({exp.start_date} - {exp.end_date})\n"
+            f"Description: {exp.description}"
+            for i, exp in enumerate(resume.experience)
+        ])
 
         return f"""You are an expert resume writer. Your task is to tailor work experience entries to match a job description.
 
@@ -161,28 +159,27 @@ Do NOT include preamble or explanation. Return ONLY the comma-separated skills l
         Returns:
             LLM prompt string ready to send to Ollama
         """
-        return f"""Analyze how well this resume matches the job description.
+        return f"""You are an expert recruiter evaluating resume-job fit. Analyze the following resume against the job description.
 
 JOB DESCRIPTION:
 Title: {job_description.title}
+Company: {job_description.company or "Not specified"}
 Required Skills: {", ".join(job_description.required_skills)}
 Responsibilities: {", ".join(job_description.responsibilities)}
 
-RESUME SUMMARY:
-{resume.summary}
+RESUME:
+Summary: {resume.summary}
+Skills: {", ".join([s.name for s in resume.skills])}
+Experience: {chr(10).join([f"- {e.job_title} at {e.company}" for e in resume.experience])}
 
-CANDIDATE SKILLS:
-{", ".join([s.name for s in resume.skills])}
-
-CANDIDATE EXPERIENCE:
-{chr(10).join([f"- {e.job_title} at {e.company}" for e in resume.experience])}
-
-Provide a brief assessment:
-1. Match percentage (0-100%)
-2. Top 3 matching skills/experiences
-3. Top 3 missing skills/experiences
-
-Format:
-Match: [X]%
+Provide ONLY the following output (no preamble, no explanation):
+Match: [0-100]%
 Matches: [item1], [item2], [item3]
-Gaps: [item1], [item2], [item3]"""
+Gaps: [item1], [item2], [item3]
+
+Where:
+- Match: Percentage of job requirements met (0-100)
+- Matches: 3 key matching skills/experiences the candidate has
+- Gaps: 3 key missing skills/experiences the candidate lacks
+
+Output format MUST be exactly as shown above with no additional text."""
