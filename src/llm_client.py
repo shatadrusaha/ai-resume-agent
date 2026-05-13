@@ -10,7 +10,7 @@ from typing import Optional
 
 import requests
 
-from src.config import get_config
+from src.config import Config, get_config
 
 logger = logging.getLogger(__name__)
 
@@ -40,24 +40,39 @@ class OllamaClient:
     verification, model discovery, and prompt generation.
 
     Attributes:
-        base_url: Ollama server URL (e.g., http://localhost:11434)
-        model: Default LLM model name
-        timeout: Request timeout in seconds
+        config: Config instance with Ollama server and tailoring settings
     """
 
-    def __init__(self, config=None):
+    def __init__(self, config: Optional[Config] = None):
         """Initialize Ollama client.
 
         Args:
-            config: OllamaConfig instance. If None, loads from global config.
+            config: Config instance. If None, loads from global config.
         """
         if config is None:
-            config = get_config().ollama
+            config = get_config()
 
         self.config = config
-        self.base_url = config.base_url
-        self.model = config.model
-        self.timeout = config.timeout
+
+    @property
+    def base_url(self) -> str:
+        """Convenience alias for config.ollama_base_url."""
+        return self.config.ollama_base_url
+
+    @property
+    def model(self) -> str:
+        """Convenience alias for config.ollama_model."""
+        return self.config.ollama_model
+
+    @model.setter
+    def model(self, value: str) -> None:
+        """Allow overriding the model at runtime."""
+        self.config.ollama_model = value
+
+    @property
+    def timeout(self) -> int:
+        """Convenience alias for config.ollama_timeout."""
+        return self.config.ollama_timeout
 
     def test_connection(self) -> bool:
         """Test connection to Ollama server.
@@ -74,21 +89,21 @@ class OllamaClient:
         """
         try:
             response = requests.get(
-                f"{self.base_url}/api/tags",
+                f"{self.config.ollama_base_url}/api/tags",
                 timeout=5,
             )
             response.raise_for_status()
-            logger.info(f"✓ Connected to Ollama at {self.base_url}")
+            logger.info(f"✓ Connected to Ollama at {self.config.ollama_base_url}")
             return True
         except requests.exceptions.ConnectionError as e:
             msg = (
-                f"Failed to connect to Ollama at {self.base_url}. "
+                f"Failed to connect to Ollama at {self.config.ollama_base_url}. "
                 f"Is Ollama running? Error: {str(e)}"
             )
             logger.error(msg)
             raise OllamaConnectionError(msg) from e
         except requests.exceptions.Timeout as e:
-            msg = f"Connection to Ollama timed out at {self.base_url}. Error: {str(e)}"
+            msg = f"Connection to Ollama timed out at {self.config.ollama_base_url}. Error: {str(e)}"
             logger.error(msg)
             raise OllamaTimeoutError(msg) from e
         except requests.exceptions.RequestException as e:
@@ -100,14 +115,14 @@ class OllamaClient:
         """Get list of available models from Ollama server.
 
         Returns:
-            List of model names (e.g., ['llama3', 'mistral', 'neural-chat'])
+            List of model names available on the Ollama server.
 
         Raises:
             OllamaConnectionError: If unable to reach Ollama
         """
         try:
             response = requests.get(
-                f"{self.base_url}/api/tags",
+                f"{self.config.ollama_base_url}/api/tags",
                 timeout=5,
             )
             response.raise_for_status()
@@ -145,13 +160,13 @@ class OllamaClient:
             OllamaTimeoutError: If request exceeds timeout
         """
         if model is None:
-            model = self.model
+            model = self.config.ollama_model
 
         if temperature is None:
-            temperature = get_config().tailoring.temperature
+            temperature = self.config.tailoring_temperature
 
         if max_tokens is None:
-            max_tokens = get_config().tailoring.max_tokens
+            max_tokens = self.config.tailoring_max_tokens
 
         logger.debug(f"Calling Ollama with model={model}, temp={temperature}")
 
@@ -167,9 +182,9 @@ class OllamaClient:
             }
 
             response = requests.post(
-                f"{self.base_url}/api/generate",
+                f"{self.config.ollama_base_url}/api/generate",
                 json=payload,
-                timeout=self.timeout,
+                timeout=self.config.ollama_timeout,
             )
 
             # Handle 404: Model not found
@@ -194,11 +209,11 @@ class OllamaClient:
             return generated_text
 
         except requests.exceptions.Timeout as e:
-            msg = f"Ollama request timed out after {self.timeout}s"
+            msg = f"Ollama request timed out after {self.config.ollama_timeout}s"
             logger.error(msg)
             raise OllamaTimeoutError(msg) from e
         except requests.exceptions.ConnectionError as e:
-            msg = f"Failed to connect to Ollama at {self.base_url}. Is Ollama running? (ollama serve)"
+            msg = f"Failed to connect to Ollama at {self.config.ollama_base_url}. Is Ollama running? (ollama serve)"
             logger.error(msg)
             raise OllamaConnectionError(msg) from e
         except requests.exceptions.HTTPError as e:

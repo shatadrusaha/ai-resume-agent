@@ -17,9 +17,8 @@ Typical usage:
 """
 
 import streamlit as st
-import os
 
-from src.config import OllamaConfig
+from src.config import Config
 from src.llm_client import OllamaClient
 from src.resume_agent import ResumeAgent
 from src.storage import (
@@ -59,7 +58,12 @@ def check_ollama_connection(host: str, port: int, timeout: int) -> bool:
         True if Ollama is reachable, False otherwise
     """
     try:
-        config = OllamaConfig(host=host, port=port, timeout=timeout)
+        # Create config with user-provided Ollama settings and defaults for tailoring
+        config = Config(
+            ollama_host=host,
+            ollama_port=port,
+            ollama_timeout=timeout,
+        )
         client = OllamaClient(config=config)
         client.test_connection()
         return True
@@ -70,6 +74,8 @@ def check_ollama_connection(host: str, port: int, timeout: int) -> bool:
 def tailor_resume(
     resume_text: str,
     job_text: str,
+    host: str,
+    port: int,
     model: str,
     temperature: float,
     max_tokens: int,
@@ -81,6 +87,8 @@ def tailor_resume(
     Args:
         resume_text: Plain-text resume content
         job_text: Plain-text job description content
+        host: Ollama server hostname
+        port: Ollama server port
         model: LLM model name (e.g., "llama3")
         temperature: LLM creativity (0.0-1.0)
         max_tokens: Max generated tokens
@@ -95,16 +103,16 @@ def tailor_resume(
         resume = parse_resume_from_text(resume_text)
         job = parse_job_description_from_text(job_text)
 
-        # Create Ollama config with user-provided settings
-        ollama_config = OllamaConfig(
-            host=os.getenv("OLLAMA_HOST", "localhost"),
-            port=int(os.getenv("OLLAMA_PORT", "11434")),
-            model=model,
-            timeout=timeout,
+        # Create config with all user-provided settings from the sidebar
+        config = Config(
+            ollama_host=host,
+            ollama_port=port,
+            ollama_model=model,
+            ollama_timeout=timeout,
+            tailoring_temperature=temperature,
+            tailoring_max_tokens=max_tokens,
         )
-
-        # Create OllamaClient with config and ResumeAgent with that client
-        client = OllamaClient(config=ollama_config)
+        client = OllamaClient(config=config)
         agent = ResumeAgent(ollama_client=client)
 
         # Generate tailored resume
@@ -231,6 +239,8 @@ def main():
                         tailored, evaluation = tailor_resume(
                             st.session_state.resume_text,
                             st.session_state.job_text,
+                            host=ollama_host,
+                            port=ollama_port,
                             model=model,
                             temperature=temperature,
                             max_tokens=max_tokens,

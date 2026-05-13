@@ -9,45 +9,56 @@ from src.llm_client import (
     OllamaConnectionError,
     OllamaTimeoutError,
 )
-from src.config import OllamaConfig
+from src.config import Config
+
+
+def create_test_config(
+    host="localhost",
+    port=11434,
+    model="llama3",
+    timeout=300,
+    temperature=0.7,
+    max_tokens=2000,
+    context_window=4096,
+) -> Config:
+    """Helper function to create Config for tests."""
+    return Config(
+        ollama_host=host,
+        ollama_port=port,
+        ollama_model=model,
+        ollama_timeout=timeout,
+        tailoring_temperature=temperature,
+        tailoring_max_tokens=max_tokens,
+        tailoring_context_window=context_window,
+    )
 
 
 class TestOllamaClientInit:
     """Test OllamaClient initialization."""
 
     def test_ollama_client_with_config(self):
-        """Initialize OllamaClient with config object."""
-        config = OllamaConfig(
-            host="localhost",
-            port=11434,
-            model="llama3",
-            timeout=300,
-        )
+        """Initialize OllamaClient with Config object."""
+        config = create_test_config()
         client = OllamaClient(config=config)
 
         assert client.base_url == "http://localhost:11434"
         assert client.model == "llama3"
         assert client.timeout == 300
+        assert client.config.tailoring_temperature == 0.7
 
     def test_ollama_client_base_url_construction(self):
         """Verify base_url is correctly constructed from host/port."""
-        config = OllamaConfig(
+        config = create_test_config(
             host="api.example.com",
             port=8080,
             model="mistral",
-            timeout=300,
         )
         client = OllamaClient(config=config)
         assert client.base_url == "http://api.example.com:8080"
 
     def test_ollama_client_model_override(self):
         """Allow model to be overridden after initialization."""
-        config = OllamaConfig(
-            host="localhost",
-            port=11434,
-            model="llama3",
-            timeout=300,
-        )
+        config = create_test_config()
         client = OllamaClient(config=config)
         assert client.model == "llama3"
 
@@ -82,7 +93,7 @@ class TestOllamaTestConnection:
         mock_response.json.return_value = {"models": [{"name": "llama3"}]}
         mock_get.return_value = mock_response
 
-        config = OllamaConfig(host="localhost", port=11434, model="llama3", timeout=300)
+        config = create_test_config()
         client = OllamaClient(config=config)
         result = client.test_connection()
 
@@ -94,7 +105,7 @@ class TestOllamaTestConnection:
         """Test connection failure to Ollama."""
         mock_get.side_effect = requests.ConnectionError("Connection refused")
 
-        config = OllamaConfig(host="localhost", port=11434, model="llama3", timeout=300)
+        config = create_test_config()
         client = OllamaClient(config=config)
 
         with pytest.raises(OllamaConnectionError):
@@ -105,7 +116,7 @@ class TestOllamaTestConnection:
         """Test connection timeout."""
         mock_get.side_effect = requests.Timeout("Connection timeout")
 
-        config = OllamaConfig(host="localhost", port=11434, model="llama3", timeout=300)
+        config = create_test_config()
         client = OllamaClient(config=config)
 
         with pytest.raises(OllamaTimeoutError):
@@ -129,7 +140,7 @@ class TestOllamaGetModels:
         }
         mock_get.return_value = mock_response
 
-        config = OllamaConfig(host="localhost", port=11434, model="llama3", timeout=300)
+        config = create_test_config()
         client = OllamaClient(config=config)
         models = client.get_available_models()
 
@@ -142,7 +153,7 @@ class TestOllamaGetModels:
         """Handle connection error when getting models."""
         mock_get.side_effect = requests.ConnectionError("Connection refused")
 
-        config = OllamaConfig(host="localhost", port=11434, model="llama3", timeout=300)
+        config = create_test_config()
         client = OllamaClient(config=config)
         with pytest.raises(OllamaConnectionError):
             client.get_available_models()
@@ -155,7 +166,7 @@ class TestOllamaGetModels:
         mock_response.json.return_value = {"models": []}
         mock_get.return_value = mock_response
 
-        config = OllamaConfig(host="localhost", port=11434, model="llama3", timeout=300)
+        config = create_test_config()
         client = OllamaClient(config=config)
         models = client.get_available_models()
 
@@ -173,7 +184,7 @@ class TestOllamaCallOllama:
         mock_response.json.return_value = {"response": "This is a test response."}
         mock_post.return_value = mock_response
 
-        config = OllamaConfig(host="localhost", port=11434, model="llama3", timeout=300)
+        config = create_test_config()
         client = OllamaClient(config=config)
         response = client.call_ollama("What is Python?")
 
@@ -188,7 +199,7 @@ class TestOllamaCallOllama:
         mock_response.json.return_value = {"response": "Response"}
         mock_post.return_value = mock_response
 
-        config = OllamaConfig(host="localhost", port=11434, model="llama3", timeout=300)
+        config = create_test_config()
         client = OllamaClient(config=config)
         client.call_ollama("Prompt", temperature=0.3)
 
@@ -203,7 +214,7 @@ class TestOllamaCallOllama:
         mock_response.json.return_value = {"response": "Response"}
         mock_post.return_value = mock_response
 
-        config = OllamaConfig(host="localhost", port=11434, model="llama3", timeout=300)
+        config = create_test_config()
         client = OllamaClient(config=config)
         client.call_ollama("Prompt", max_tokens=1000)
 
@@ -215,7 +226,7 @@ class TestOllamaCallOllama:
         """Handle connection error during API call."""
         mock_post.side_effect = requests.ConnectionError("Connection refused")
 
-        config = OllamaConfig(host="localhost", port=11434, model="llama3", timeout=300)
+        config = create_test_config()
         client = OllamaClient(config=config)
         with pytest.raises(OllamaConnectionError):
             client.call_ollama("Prompt")
@@ -225,7 +236,7 @@ class TestOllamaCallOllama:
         """Handle timeout during API call."""
         mock_post.side_effect = requests.Timeout("Request timeout")
 
-        config = OllamaConfig(host="localhost", port=11434, model="llama3", timeout=300)
+        config = create_test_config()
         client = OllamaClient(config=config)
         with pytest.raises(OllamaTimeoutError):
             client.call_ollama("Prompt")
@@ -242,7 +253,7 @@ class TestOllamaRetry:
         mock_response.json.return_value = {"response": "Success"}
         mock_post.return_value = mock_response
 
-        config = OllamaConfig(host="localhost", port=11434, model="llama3", timeout=300)
+        config = create_test_config()
         client = OllamaClient(config=config)
         response = client.call_ollama_with_retry("Prompt", max_retries=3)
 
@@ -258,7 +269,7 @@ class TestOllamaRetry:
             Mock(status_code=200, json=lambda: {"response": "Success"}),
         ]
 
-        config = OllamaConfig(host="localhost", port=11434, model="llama3", timeout=300)
+        config = create_test_config()
         client = OllamaClient(config=config)
         response = client.call_ollama_with_retry("Prompt", max_retries=3)
 
@@ -270,7 +281,7 @@ class TestOllamaRetry:
         """Exhaust all retries on transient errors."""
         mock_post.side_effect = requests.Timeout("Timeout")
 
-        config = OllamaConfig(host="localhost", port=11434, model="llama3", timeout=300)
+        config = create_test_config()
         client = OllamaClient(config=config)
         with pytest.raises(OllamaTimeoutError):
             client.call_ollama_with_retry("Prompt", max_retries=2)
@@ -282,7 +293,7 @@ class TestOllamaRetry:
         """Test custom retry count."""
         mock_post.side_effect = requests.Timeout("Timeout")
 
-        config = OllamaConfig(host="localhost", port=11434, model="llama3", timeout=300)
+        config = create_test_config()
         client = OllamaClient(config=config)
         with pytest.raises(OllamaTimeoutError):
             client.call_ollama_with_retry("Prompt", max_retries=5)
