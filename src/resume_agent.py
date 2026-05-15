@@ -365,25 +365,42 @@ class ResumeAgent:
 
     @staticmethod
     def _parse_skills_from_text(text: str) -> list[Skill]:
-        """Parse comma-separated skills from LLM response.
+        """Parse skills from LLM response, supporting grouped format.
 
-        Splits LLM output by commas and creates Skill objects for
-        each non-empty skill name.
+        Handles both grouped format (Category: skill1, skill2) and
+        legacy flat comma-separated format. Preserves category information
+        from grouped format or defaults to General.
 
         Args:
-            text: LLM-generated skills text (comma-separated)
+            text: LLM-generated skills text (grouped or comma-separated)
 
         Returns:
             List of Skill objects in order from most to least relevant
         """
         skills = []
+        lines = text.strip().split("\n")
 
-        # Split by comma and clean up
-        skill_names = [s.strip() for s in text.split(",")]
+        for line in lines:
+            line = line.strip()
+            if not line:
+                continue
 
-        for skill_name in skill_names:
-            if skill_name:
-                skills.append(Skill(name=skill_name))
+            # Check if line has category format (Category: skill1, skill2)
+            if ":" in line:
+                parts = line.split(":", 1)
+                category = parts[0].strip()
+                skills_text = parts[1].strip()
+                # Parse skills for this category
+                for skill_name in skills_text.split(","):
+                    skill_name = skill_name.strip()
+                    if skill_name:
+                        skills.append(Skill(name=skill_name, category=category))
+            else:
+                # Flat format - treat as comma-separated skills without category
+                for skill_name in line.split(","):
+                    skill_name = skill_name.strip()
+                    if skill_name:
+                        skills.append(Skill(name=skill_name, category="General"))
 
         return skills
 

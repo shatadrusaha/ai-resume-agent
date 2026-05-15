@@ -152,29 +152,43 @@ def _parse_experience_section(text: str) -> List[Experience]:
 def _parse_skills_section(text: str) -> List[Skill]:
     """Parse skills section into Skill objects.
 
-    Handles both line-by-line and comma-separated formats.
-    Lines starting with '-' are parsed, with multiple skills
-    separated by commas on a single line.
+    Handles both grouped format (Category: skill1, skill2) and
+    flat comma-separated formats. Supports legacy flat format with
+    '-' prefix or without.
 
     Args:
         text: Skills section text
 
     Returns:
-        List of Skill objects
+        List of Skill objects with category information
     """
     skills = []
     lines = text.strip().split("\n")
 
     for line in lines:
         line = line.strip()
+        if not line:
+            continue
+
         if line.startswith("-"):
             line = line[1:].strip()
 
-        # Handle comma-separated skills on same line
-        for skill_name in line.split(","):
-            skill_name = skill_name.strip()
-            if skill_name:
-                skills.append(Skill(name=skill_name))
+        # Check if line has category format (Category: skill1, skill2)
+        if ":" in line:
+            parts = line.split(":", 1)
+            category = parts[0].strip()
+            skills_text = parts[1].strip()
+            # Parse skills for this category
+            for skill_name in skills_text.split(","):
+                skill_name = skill_name.strip()
+                if skill_name:
+                    skills.append(Skill(name=skill_name, category=category))
+        else:
+            # Flat format without category - use General
+            for skill_name in line.split(","):
+                skill_name = skill_name.strip()
+                if skill_name:
+                    skills.append(Skill(name=skill_name, category="General"))
 
     return skills
 
@@ -225,13 +239,11 @@ def save_resume_to_file(resume: Resume, file_path: str) -> None:
         lines.append(f"Phone: {resume.phone}")
 
     if resume.summary:
-        lines.extend(
-            [
-                "",
-                "## SUMMARY",
-                resume.summary,
-            ]
-        )
+        lines.extend([
+            "",
+            "## SUMMARY",
+            resume.summary,
+        ])
 
     if resume.experience:
         lines.append("")
@@ -245,8 +257,17 @@ def save_resume_to_file(resume: Resume, file_path: str) -> None:
     if resume.skills:
         lines.append("")
         lines.append("## SKILLS")
-        skill_names = [skill.name for skill in resume.skills]
-        lines.append("- " + ", ".join(skill_names))
+        # Group skills by category
+        skills_by_category = {}
+        for skill in resume.skills:
+            category = skill.category or "General"
+            if category not in skills_by_category:
+                skills_by_category[category] = []
+            skills_by_category[category].append(skill.name)
+        # Save grouped skills
+        for category in sorted(skills_by_category.keys()):
+            skill_names = ", ".join(skills_by_category[category])
+            lines.append(f"{category}: {skill_names}")
 
     with open(path, "w", encoding="utf-8") as f:
         f.write("\n".join(lines))

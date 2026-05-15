@@ -108,7 +108,8 @@ Only include the top 3-4 most relevant positions. Do NOT include preamble or exp
         """Generate a prompt to tailor and rank skills by job relevance.
 
         Creates a prompt that instructs the LLM to filter, prioritize,
-        and rank skills to match the job description. Returns top 15-20 skills.
+        and rank skills to match the job description. Returns top 15-20 skills
+        organized by category.
 
         Args:
             resume: User's resume with original skills
@@ -117,7 +118,18 @@ Only include the top 3-4 most relevant positions. Do NOT include preamble or exp
         Returns:
             LLM prompt string ready to send to Ollama
         """
-        current_skills = ", ".join([skill.name for skill in resume.skills])
+        # Group current skills by category for reference
+        skills_by_category = {}
+        for skill in resume.skills:
+            category = skill.category or "General"
+            if category not in skills_by_category:
+                skills_by_category[category] = []
+            skills_by_category[category].append(skill.name)
+
+        current_skills = "\n".join([
+            f"{cat}: {', '.join(names)}"
+            for cat, names in sorted(skills_by_category.items())
+        ])
 
         return f"""You are an expert recruiter. Your task is to rank and filter skills to match a job description.
 
@@ -128,20 +140,21 @@ Company: {job_description.company or "Not specified"}
 REQUIRED SKILLS (explicit):
 {chr(10).join(f"- {skill}" for skill in job_description.required_skills)}
 
-CANDIDATE'S CURRENT SKILLS:
+CANDIDATE'S CURRENT SKILLS (by category):
 {current_skills}
 
 Please:
 1. Identify which of the candidate's skills match the job requirements
 2. Prioritize skills that exactly match the job description requirements
 3. Include related skills that are valuable for the position
-4. Create a skill list organized by category/relevance
+4. Organize skills by meaningful categories (e.g., Languages, Frameworks, Databases, Tools, etc.)
 5. Focus on top 15-20 most relevant skills
 
-Return the skills as a comma-separated list, ordered by relevance to the job:
-[Skill1], [Skill2], [Skill3], ...
+Return the skills GROUPED BY CATEGORY in this format:
+Category1: Skill1, Skill2, Skill3
+Category2: Skill4, Skill5, Skill6
 
-Do NOT include preamble or explanation. Return ONLY the comma-separated skills list."""
+Do NOT include preamble or explanation. Return ONLY the categorized skills list."""
 
     @staticmethod
     def evaluate_relevance_prompt(

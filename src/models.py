@@ -114,8 +114,17 @@ class Resume(BaseModel):
                 lines.append(f"- {exp}")
         if self.skills:
             lines.append("\nSKILLS")
+            # Group skills by category
+            skills_by_category = {}
             for skill in self.skills:
-                lines.append(f"- {skill}")
+                category = skill.category or "General"
+                if category not in skills_by_category:
+                    skills_by_category[category] = []
+                skills_by_category[category].append(skill.name)
+            # Display grouped skills
+            for category in sorted(skills_by_category.keys()):
+                skill_names = ", ".join(skills_by_category[category])
+                lines.append(f"{category}: {skill_names}")
         return "\n".join(lines)
 
 
